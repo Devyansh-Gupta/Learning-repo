@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Faculty AOS · Dashboard</title>
+<meta name="description" content="Miles Education · Academic Operations Suite — faculty dashboard, schedule, time tracking." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ------------ Reset ------------ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+a{color:inherit;text-decoration:none}
+input,select,textarea{font:inherit;color:inherit}
+img,svg{display:block;max-width:100%}
+table{border-collapse:collapse;width:100%}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* ------------ Tokens ------------ */
+:root{
+  --bg:#FAFAF7;          /* warm cream tint */
+  --surface:#FFFFFF;
+  --surface-2:#F2F1EC;
+  --surface-hover:#F6F5F0;
+  --border:#E7E4DD;
+  --border-strong:#CDC8BD;
+  --text:#1F1B16;        /* warm near-black */
+  --text-2:#5B564B;
+  --text-3:#9C9587;
+  --primary:#2C1810;     /* espresso */
+  --primary-2:#B8794E;   /* copper */
+  --primary-2-bg:#FBF1E6;
+  --success:#15803D;
+  --success-bg:#ECFDF5;
+  --warning:#B45309;
+  --warning-bg:#FEF3C7;
+  --danger:#B91C1C;
+  --danger-bg:#FEE2E2;
+  --now:#DC2626;
+  --ring:rgba(184,121,78,.45);
+  --shadow-sm:0 1px 2px rgba(31,27,22,.04);
+  --shadow:0 1px 3px rgba(31,27,22,.06),0 1px 2px rgba(31,27,22,.04);
+  --shadow-md:0 6px 16px -4px rgba(31,27,22,.10),0 2px 4px -2px rgba(31,27,22,.05);
+  --r-sm:6px; --r:10px; --r-lg:14px;
+  --side:236px;
+  --topbar:60px;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Monaco,Consolas,monospace;
+
+  /* 8 deterministic course colours per implementation plan */
+  --c1:#E8725A; --c1-bg:#FEEFEA; --c1-bd:#FBD1C2;  /* coral  */
+  --c2:#4CAF7D; --c2-bg:#E9F7EF; --c2-bd:#BAE5CB;  /* emerald*/
+  --c3:#6366F1; --c3-bg:#EEF0FE; --c3-bd:#C7CCFA;  /* indigo */
+  --c4:#F59E0B; --c4-bg:#FEF5E1; --c4-bd:#FCDF9C;  /* amber  */
+  --c5:#14B8A6; --c5-bg:#E5F8F5; --c5-bd:#B2EAE0;  /* teal   */
+  --c6:#F43F5E; --c6-bg:#FEE9ED; --c6-bd:#FBC1CC;  /* rose   */
+  --c7:#0EA5E9; --c7-bg:#E2F4FB; --c7-bd:#B6E0F4;  /* sky    */
+  --c8:#A855F7; --c8-bg:#F4ECFD; --c8-bd:#DCC4F4;  /* purple */
+}
+
+/* ------------ Sidebar (espresso, per Paper.design tokens) ------------ */
+.app{display:grid;grid-template-columns:var(--side) 1fr;min-height:100vh}
+.sidebar{
+  position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  background:var(--primary);color:#E9E0D6;
+  display:flex;flex-direction:column;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:18px 18px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.brand-mark{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--primary-2),#9A6440);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px;font-family:var(--mono);
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.15}
+.brand-name{font-size:13px;font-weight:600;color:#FAF6EF}
+.brand-sub{font-size:10.5px;color:#B6A99A;letter-spacing:.04em;text-transform:uppercase}
+.nav{padding:10px 8px;display:flex;flex-direction:column;gap:1px;flex:1}
+.nav-section{
+  font-size:10.5px;font-weight:600;color:#9F9081;
+  letter-spacing:.08em;text-transform:uppercase;padding:14px 12px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 12px;border-radius:7px;
+  color:#D9CFC2;font-size:13px;font-weight:500;
+  transition:background .15s,color .15s;
+}
+.nav-item:hover{background:rgba(255,255,255,.05);color:#FAF6EF}
+.nav-item.is-active{background:rgba(184,121,78,.18);color:#FFF1E0;font-weight:600}
+.nav-item.is-active svg{color:var(--primary-2)}
+.nav-item svg{width:16px;height:16px;color:#9F9081;flex-shrink:0}
+.nav-item .badge{
+  margin-left:auto;font-size:11px;font-weight:600;
+  background:rgba(184,121,78,.22);color:#F4D9BB;
+  padding:1px 7px;border-radius:10px;font-family:var(--mono);
+}
+.user-card{
+  margin:10px;padding:12px;border-radius:10px;
+  background:rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:10px;
+}
+.avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#D5A37C,#8B5A38);
+  color:#fff;font-weight:600;display:grid;place-items:center;font-size:13px;
+}
+.user-meta{min-width:0;flex:1}
+.user-name{font-size:12.5px;font-weight:600;color:#FAF6EF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-sub{font-size:10.5px;color:#B6A99A;font-family:var(--mono)}
+.user-card .icon-btn{color:#B6A99A}
+.user-card .icon-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+
+/* ------------ Main ------------ */
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{
+  position:sticky;top:0;z-index:40;height:var(--topbar);
+  background:rgba(250,250,247,.86);backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:0 24px;
+}
+.crumbs{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-3)}
+.crumbs strong{color:var(--text);font-weight:600}
+.search{flex:1;max-width:380px;margin-left:auto;position:relative}
+.search input{
+  width:100%;height:34px;padding:0 12px 0 34px;
+  background:var(--surface-2);border:1px solid transparent;border-radius:8px;font-size:13px;
+}
+.search input:focus{outline:none;border-color:var(--border-strong);background:#fff;box-shadow:0 0 0 3px var(--ring)}
+.search svg{position:absolute;top:9px;left:11px;width:16px;height:16px;color:var(--text-3)}
+.kbd{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10px;color:var(--text-3);background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.icon-btn{width:34px;height:34px;border-radius:7px;display:grid;place-items:center;color:var(--text-2);transition:background .15s,color .15s;position:relative}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn .dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--danger);border:2px solid var(--surface)}
+
+.content{padding:22px 24px 36px;display:flex;flex-direction:column;gap:22px;max-width:1500px}
+
+/* ------------ Buttons ------------ */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  height:36px;padding:0 14px;border-radius:8px;
+  font-size:13px;font-weight:600;
+  transition:background .15s,box-shadow .15s,transform .08s,border-color .15s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--primary-2);color:#fff;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:#A26939}
+.btn-dark{background:var(--primary);color:#fff;box-shadow:var(--shadow-sm)}
+.btn-dark:hover{background:#3D2418}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface-2);border-color:var(--border-strong)}
+.btn-ghost{color:var(--text-2)}
+.btn-ghost:hover{color:var(--text);background:var(--surface-2)}
+.btn-sm{height:30px;padding:0 11px;font-size:12px;border-radius:7px}
+.btn svg{width:15px;height:15px}
+
+/* ------------ Hello row ------------ */
+.hello{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+}
+.hello-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.date-block{
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  box-shadow:var(--shadow-sm);
+}
+.date-block .num{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--text);line-height:1;letter-spacing:-.02em}
+.date-block .lbl{display:flex;flex-direction:column;line-height:1.2}
+.date-block .lbl .d{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.date-block .lbl .m{font-size:13px;color:var(--text);font-weight:600}
+.hello h1{margin:0;font-size:20px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+.hello h1 .name{color:var(--primary-2)}
+.hello p{margin:4px 0 0;color:var(--text-2);font-size:13.5px}
+.hello p .acc{color:var(--text);font-weight:600;font-family:var(--mono)}
+.persona{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 10px 5px 6px;background:var(--surface);border:1px solid var(--border);
+  border-radius:999px;font-size:12px;color:var(--text-2);
+}
+.persona .badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:999px;
+  background:var(--primary-2-bg);color:var(--primary-2);font-family:var(--mono);
+}
+.persona .em{color:var(--text);font-weight:600;font-family:var(--mono)}
+.persona .switch{
+  margin-left:6px;color:var(--text-3);font-size:11px;
+  border-left:1px solid var(--border);padding-left:8px;cursor:pointer;
+}
+
+/* ------------ KPI cards (4) ------------ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:16px 18px;display:flex;flex-direction:column;gap:8px;
+  position:relative;overflow:hidden;transition:box-shadow .15s,border-color .15s;
+}
+.kpi:hover{box-shadow:var(--shadow-md)}
+.kpi-label{
+  display:flex;align-items:center;gap:7px;
+  font-size:11.5px;font-weight:600;color:var(--text-2);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.kpi-label svg{width:14px;height:14px;color:var(--text-3)}
+.kpi-value{
+  font-family:var(--mono);font-size:30px;font-weight:600;
+  color:var(--text);letter-spacing:-.02em;line-height:1.05;
+  display:flex;align-items:baseline;gap:6px;
+}
+.kpi-value .unit{font-size:12px;color:var(--text-3);font-weight:500;text-transform:lowercase}
+.kpi-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--text-2)}
+.delta{display:inline-flex;align-items:center;gap:2px;font-weight:600;font-size:11.5px;font-family:var(--mono)}
+.delta-up{color:var(--success)} .delta-down{color:var(--danger)}
+.delta svg{width:11px;height:11px}
+.spark{height:24px;width:90px;color:var(--primary-2);opacity:.85}
+.kpi.kpi-accent{background:linear-gradient(180deg,#FFF8EE,#FBF1E6);border-color:#F4DDC0}
+
+/* ------------ Layout: timetable + aside ------------ */
+.layout-week{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+
+/* ------------ Timetable ------------ */
+.tt-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.tt-toolbar{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.tt-title{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.tt-title h2{margin:0;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.tt-title .week-num{font-size:11px;font-weight:600;color:var(--primary-2);background:var(--primary-2-bg);padding:2px 8px;border-radius:5px;font-family:var(--mono);letter-spacing:.04em}
+.tt-title .range{font-size:12.5px;color:var(--text-3);font-family:var(--mono)}
+.tt-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface-2);padding:3px;border-radius:8px;border:1px solid var(--border)}
+.seg button{padding:5px 11px;border-radius:5px;font-size:12px;font-weight:600;color:var(--text-2)}
+.seg button.is-on{background:#fff;color:var(--text);box-shadow:var(--shadow-sm)}
+.tt-arrows{display:flex;align-items:center;gap:2px}
+
+.tt-grid{
+  display:grid;grid-template-columns:60px repeat(7,minmax(0,1fr));position:relative;
+}
+.tt-corner{
+  background:var(--surface);border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  position:sticky;top:0;left:0;z-index:5;
+}
+.tt-day-head{
+  padding:10px;background:var(--surface);
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:4;
+}
+.tt-day-head:last-child{border-right:0}
+.tt-day-head .name{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em}
+.tt-day-head .num{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);letter-spacing:-.01em;line-height:1.1}
+.tt-day-head.is-today{background:#FFF7EE}
+.tt-day-head.is-today .num,.tt-day-head.is-today .name{color:var(--primary-2)}
+.tt-day-head .num .pill-today{
+  display:inline-block;font-size:9.5px;font-weight:700;color:#fff;background:var(--primary-2);
+  border-radius:5px;padding:1px 5px;margin-left:6px;letter-spacing:.04em;text-transform:uppercase;font-family:'Inter',sans-serif;vertical-align:2px;
+}
+
+.tt-time{
+  padding:6px 6px 0 0;text-align:right;
+  font-family:var(--mono);font-size:10.5px;color:var(--text-3);
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);height:64px;
+}
+.tt-cell{
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  height:64px;position:relative;background:#fff;transition:background .12s;
+}
+.tt-cell:last-child{border-right:0}
+.tt-cell:hover{background:var(--surface-hover);cursor:pointer}
+.tt-cell.is-today{background:#FFF7EE}
+.tt-cell.is-today:hover{background:#FFF0DD}
+
+.cls{
+  position:absolute;left:4px;right:4px;border-radius:7px;padding:7px 9px;
+  display:flex;flex-direction:column;gap:2px;font-size:11.5px;line-height:1.25;
+  cursor:pointer;transition:transform .12s,box-shadow .15s;
+  border:1px solid transparent;border-left-width:3px;overflow:hidden;
+}
+.cls:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);z-index:3}
+.cls .row1{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.cls .time{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--text-2)}
+.cls .title{font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cls .room{font-size:10.5px;color:var(--text-2);display:flex;align-items:center;gap:4px}
+.cls .room svg{width:11px;height:11px;color:var(--text-3)}
+.cls .code{font-family:var(--mono);font-size:9.5px;color:var(--text-3);font-weight:500;letter-spacing:.04em}
+.cls.col-c1{background:var(--c1-bg);border-color:var(--c1-bd);border-left-color:var(--c1)}
+.cls.col-c2{background:var(--c2-bg);border-color:var(--c2-bd);border-left-color:var(--c2)}
+.cls.col-c3{background:var(--c3-bg);border-color:var(--c3-bd);border-left-color:var(--c3)}
+.cls.col-c4{background:var(--c4-bg);border-color:var(--c4-bd);border-left-color:var(--c4)}
+.cls.col-c5{background:var(--c5-bg);border-color:var(--c5-bd);border-left-color:var(--c5)}
+.cls.col-c6{background:var(--c6-bg);border-color:var(--c6-bd);border-left-color:var(--c6)}
+.cls.col-c7{background:var(--c7-bg);border-color:var(--c7-bd);border-left-color:var(--c7)}
+.cls.col-c8{background:var(--c8-bg);border-color:var(--c8-bd);border-left-color:var(--c8)}
+.cls .badge{
+  font-size:9.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  padding:1px 5px;border-radius:4px;background:rgba(31,27,22,.08);color:var(--text-2);
+}
+.cls .badge.live{background:var(--now);color:#fff}
+.cls .badge.taught{background:var(--success-bg);color:var(--success)}
+.cls .badge.unlogged{background:var(--warning-bg);color:var(--warning)}
+.cls .badge.online{background:var(--c8-bg);color:var(--c8)}
+.cls .badge.conflict{background:var(--danger-bg);color:var(--danger)}
+
+.now-line{position:absolute;left:60px;right:0;height:0;border-top:1.5px solid var(--now);z-index:2;pointer-events:none}
+.now-line::before{content:'';position:absolute;left:-6px;top:-5px;width:9px;height:9px;border-radius:50%;background:var(--now)}
+.now-line .lbl{position:absolute;left:-56px;top:-9px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--now);background:#fff;padding:1px 4px;border-radius:4px;border:1px solid var(--now)}
+
+/* ------------ Aside ------------ */
+.aside-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);display:flex;flex-direction:column}
+.aside-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.aside-head h3{margin:0;font-size:13px;font-weight:600}
+.aside-head .count{font-size:11px;color:var(--text-3);font-family:var(--mono)}
+.aside-body{padding:10px}
+
+.today-list{display:flex;flex-direction:column}
+.today-row{
+  display:grid;grid-template-columns:54px 1fr auto;gap:10px;
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .12s;
+}
+.today-row:hover{background:var(--surface-hover)}
+.today-row:last-child{border-bottom:0}
+.today-row.is-now{background:#FFF5F2}
+.today-row.is-now:hover{background:#FFEAE3}
+.today-row .t{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--text);line-height:1.2}
+.today-row .t .e{display:block;color:var(--text-3);font-weight:500;font-size:10.5px}
+.today-row .b{min-width:0}
+.today-row .b .ti{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.today-row .b .ti .stripe{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.today-row .b .me{font-size:11px;color:var(--text-2);margin-top:2px}
+.today-row .a{font-size:10.5px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;align-self:center;text-align:right}
+.today-row .a.live{color:var(--now)}
+
+.subj-key{display:flex;flex-direction:column;gap:4px}
+.subj-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;cursor:pointer}
+.subj-row:hover{background:var(--surface-2)}
+.subj-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.subj-name{font-size:12.5px;color:var(--text);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.subj-meta{font-family:var(--mono);font-size:10.5px;color:var(--text-3)}
+
+.notice{
+  display:flex;gap:10px;padding:12px 14px;background:#FEF3C7;border:1px solid #FDE68A;
+  border-radius:10px;font-size:12.5px;color:#78350F;line-height:1.4;
+}
+.notice svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;color:#B45309}
+.notice strong{color:#451A03}
+.notice .act{margin-left:auto;color:#B45309;font-weight:600;white-space:nowrap}
+
+/* ------------ Section frame ------------ */
+.section{display:flex;flex-direction:column;gap:12px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+.section-title{font-size:12.5px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+.section-title .sub{font-weight:500;color:var(--text-3);text-transform:none;letter-spacing:0;font-size:12px}
+.section-link{font-size:13px;color:var(--primary-2);font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.section-link:hover{color:var(--primary)}
+.section-link svg{width:14px;height:14px}
+
+/* ------------ Batches ------------ */
+.batches{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.b-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:14px;display:flex;flex-direction:column;gap:10px;
+  position:relative;overflow:hidden;
+  transition:border-color .15s,box-shadow .15s,transform .12s;
+}
+.b-card:hover{border-color:var(--border-strong);box-shadow:var(--shadow-md)}
+.b-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--col)}
+.b-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-top:4px}
+.b-code{font-family:var(--mono);font-size:11.5px;color:var(--text-3);letter-spacing:.04em;font-weight:500}
+.b-subject{font-size:14px;font-weight:600;color:var(--text);margin-top:2px;line-height:1.3}
+.b-inst{font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:5px;margin-top:3px}
+.b-inst svg{width:13px;height:13px;color:var(--text-3)}
+.b-meta{display:flex;flex-wrap:wrap;gap:5px}
+.tag{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  background:var(--surface-2);color:var(--text-2);
+  padding:2px 6px;border-radius:5px;border:1px solid transparent;white-space:nowrap;
+}
+.tag.cat-f2f{background:var(--c5-bg);color:var(--c5);border-color:var(--c5-bd)}
+.tag.cat-online{background:var(--c8-bg);color:var(--c8);border-color:var(--c8-bd)}
+.tag.cat-oaw{background:var(--c4-bg);color:var(--c4);border-color:var(--c4-bd)}
+.weekdays{display:flex;align-items:center;gap:5px;padding-top:10px;border-top:1px dashed var(--border)}
+.wd{
+  width:22px;height:22px;border-radius:5px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  color:var(--text-3);background:var(--surface-2);
+}
+.wd.is-on{background:var(--col-bg);color:var(--col)}
+.b-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--border)}
+.b-prog{flex:1;display:flex;flex-direction:column;gap:3px}
+.b-prog-bar{height:4px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.b-prog-bar > span{display:block;height:100%;background:var(--col);border-radius:3px}
+.b-prog-text{font-size:10.5px;color:var(--text-2);font-family:var(--mono)}
+
+/* ------------ Bottom: pending · month · recent ------------ */
+.bottom-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:14px}
+.mini{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column}
+.mini-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mini-head h3{margin:0;font-size:13px;font-weight:600}
+.mini-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+
+.pending-row{display:grid;grid-template-columns:4px 1fr auto auto;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);align-items:center}
+.pending-row:last-child{border-bottom:0}
+.pending-row .stripe{width:4px;align-self:stretch;border-radius:2px;min-height:30px}
+.pending-row .meta{min-width:0}
+.pending-row .ti{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pending-row .sub{font-size:11px;color:var(--text-2);font-family:var(--mono)}
+.pending-row .h{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+
+.month-bars{display:flex;flex-direction:column;gap:9px}
+.month-bar{display:flex;align-items:center;gap:8px;font-size:12px}
+.month-bar .lbl{flex:0 0 64px;color:var(--text-2)}
+.month-bar .track{flex:1;height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden;display:flex}
+.month-bar .track .seg-a{height:100%;background:var(--success)}
+.month-bar .track .seg-p{height:100%;background:var(--warning);opacity:.7}
+.month-bar .v{font-family:var(--mono);font-size:11.5px;color:var(--text);font-weight:600;flex:0 0 50px;text-align:right}
+
+.recent-row{display:grid;grid-template-columns:36px 1fr auto;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);align-items:center}
+.recent-row:last-child{border-bottom:0}
+.recent-row .d{text-align:center}
+.recent-row .d .m{font-family:var(--mono);font-size:9.5px;color:var(--text-3);text-transform:uppercase;font-weight:600}
+.recent-row .d .n{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);line-height:1}
+.recent-row .meta{min-width:0}
+.recent-row .meta .ti{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.recent-row .meta .sub{font-size:11px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px;margin-top:1px}
+.recent-row .h{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--text);align-self:center}
+.status{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+  padding:2px 7px 2px 6px;border-radius:999px;border:1px solid transparent;line-height:1.3;
+}
+.status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
+.status.s-approved{background:var(--success-bg);color:var(--success);border-color:#A7F3D0}
+.status.s-pending{background:var(--warning-bg);color:var(--warning);border-color:#FDE68A}
+.status.s-rejected{background:var(--danger-bg);color:var(--danger);border-color:#FCA5A5}
+.status.s-active{background:var(--success-bg);color:var(--success);border-color:#A7F3D0}
+.status.s-closing{background:var(--warning-bg);color:var(--warning);border-color:#FDE68A}
+
+/* ------------ Quick log FAB ------------ */
+.quick-log{
+  position:fixed;right:24px;bottom:24px;z-index:50;
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;background:var(--primary-2);color:#fff;
+  border-radius:999px;font-weight:600;font-size:13px;
+  box-shadow:0 10px 24px -6px rgba(184,121,78,.45);
+}
+.quick-log:hover{background:#A26939}
+.quick-log svg{width:16px;height:16px}
+
+.foot{text-align:center;color:var(--text-3);font-size:12px;padding:24px 0 4px}
+
+/* ------------ Responsive ------------ */
+@media (max-width:1280px){
+  .layout-week{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .batches{grid-template-columns:repeat(2,1fr)}
+  .bottom-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:880px){
+  :root{--side:0}
+  .sidebar{display:none}
+  .topbar{padding:0 14px}
+  .content{padding:16px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .batches{grid-template-columns:1fr}
+  .bottom-grid{grid-template-columns:1fr}
+  .tt-grid{grid-template-columns:48px repeat(7,minmax(120px,1fr));overflow-x:auto;display:block}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" aria-label="Primary navigation">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">M</div>
+      <div class="brand-text">
+        <span class="brand-name">Miles · Faculty</span>
+        <span class="brand-sub">Academic Ops</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <span class="nav-section">Workspace</span>
+      <a class="nav-item is-active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        My batches
+        <span class="badge">3</span>
+      </a>
+      <a class="nav-item" href="#schedule">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18"/><path d="M8 4v4"/><path d="M16 4v4"/></svg>
+        Schedule
+      </a>
+      <a class="nav-item" href="#tt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Time tracking
+        <span class="badge">4</span>
+      </a>
+
+      <span class="nav-section">Payable</span>
+      <a class="nav-item" href="#rates">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12"/><path d="M6 8h12"/><path d="M6 13l8.5 8"/><path d="M6 13h3a4.5 4.5 0 0 0 0-9"/></svg>
+        Rate card
+      </a>
+      <a class="nav-item" href="#monthly">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
+        Monthly summary
+      </a>
+      <a class="nav-item" href="#corrections">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="13" y2="13"/><line x1="9" y1="17" x2="11" y2="17"/></svg>
+        Corrections
+      </a>
+
+      <span class="nav-section">Account</span>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        Profile
+      </a>
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><circle cx="12" cy="17" r=".7" fill="currentColor"/></svg>
+        Help
+      </a>
+    </nav>
+
+    <div class="user-card">
+      <div class="avatar" aria-hidden="true">SR</div>
+      <div class="user-meta">
+        <div class="user-name">Dr. Sunita Rao</div>
+        <div class="user-sub">MPF-4821 · Part-time</div>
+      </div>
+      <button class="icon-btn" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <header class="topbar">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <span>Faculty</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        <strong>Dashboard</strong>
+      </nav>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" placeholder="Search batches, sessions, students…" aria-label="Search" />
+        <kbd class="kbd">⌘K</kbd>
+      </div>
+      <button class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <button class="icon-btn" aria-label="Help">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4"/><circle cx="12" cy="17" r=".7" fill="currentColor"/></svg>
+      </button>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ Hello + persona ============ -->
+      <section class="hello">
+        <div class="hello-left">
+          <div class="date-block">
+            <span class="num">25</span>
+            <span class="lbl"><span class="d">Sat</span><span class="m">Apr 2026</span></span>
+          </div>
+          <div>
+            <h1>Good morning, <span class="name">Sunita</span> — 3 classes today.</h1>
+            <p>Next class in <span class="acc">42 min</span> · FPP at Aluva College, Room 204. Payroll month <strong>May</strong> closes in <span class="acc">31 days</span>.</p>
+          </div>
+        </div>
+        <div class="persona" title="Faculty type">
+          <span class="badge">PT</span>
+          <span>Part-time · <span class="em">MPF-4821</span></span>
+          <span class="switch" title="View as full-time">View as FT →</span>
+        </div>
+      </section>
+
+      <!-- ============ Notice (real ops moment) ============ -->
+      <div class="notice" role="status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        <span><strong>4 sessions from this week aren't logged yet.</strong> Submit them today so your Academic SPOC can review before the May payroll cuts on the 25th.</span>
+        <a href="#tt" class="act">Log them →</a>
+      </div>
+
+      <!-- ============ KPIs (per implementation plan) ============ -->
+      <section class="kpi-grid" aria-label="Month at a glance">
+
+        <div class="kpi">
+          <div class="kpi-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18"/></svg>
+            Classes this week
+          </div>
+          <div class="kpi-value">11<span class="unit">scheduled</span></div>
+          <div class="kpi-foot">
+            <span><span class="delta delta-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l5-5 5 5"/></svg>+2</span> vs last week</span>
+            <span style="color:var(--text-3);font-family:var(--mono)">17.5 hrs</span>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Total hours · May
+          </div>
+          <div class="kpi-value">34.33<span class="unit">hrs</span></div>
+          <div class="kpi-foot">
+            <span style="color:var(--text-2)">Approved <strong style="color:var(--success);font-family:var(--mono)">28.50</strong> · Pending <strong style="color:var(--warning);font-family:var(--mono)">5.83</strong></span>
+            <svg class="spark" viewBox="0 0 90 24" aria-hidden="true"><polyline points="0,20 11,18 22,16 33,12 44,14 55,8 66,10 77,5 90,7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-label" style="color:var(--warning)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            Pending review
+          </div>
+          <div class="kpi-value">4<span class="unit">entries</span></div>
+          <div class="kpi-foot">
+            <span>Oldest waiting <strong style="color:var(--text);font-family:var(--mono)">3 days</strong></span>
+            <a class="section-link" href="#tt" style="font-size:12px">Review →</a>
+          </div>
+        </div>
+
+        <div class="kpi kpi-accent">
+          <div class="kpi-label" style="color:var(--primary-2)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Next class
+          </div>
+          <div class="kpi-value" style="color:var(--primary)">11:15<span class="unit">— 12:15</span></div>
+          <div class="kpi-foot">
+            <span><strong style="color:var(--text);font-weight:600">IFAR2</strong> · Lease accounting · Kristu J · A-12</span>
+            <span style="font-family:var(--mono);color:var(--primary-2)">in 42m</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ Timetable (hero) + aside ============ -->
+      <section class="layout-week" id="schedule">
+
+        <div class="tt-wrap">
+          <div class="tt-toolbar">
+            <div class="tt-title">
+              <h2>Timetable</h2>
+              <span class="week-num">Wk 17</span>
+              <span class="range">Apr 25 – May 1, 2026</span>
+            </div>
+            <div class="tt-controls">
+              <div class="tt-arrows">
+                <button class="icon-btn" aria-label="Previous week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+                <button class="btn btn-ghost btn-sm">Today</button>
+                <button class="icon-btn" aria-label="Next week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+              </div>
+              <div class="seg" role="tablist" aria-label="View">
+                <button>Day</button>
+                <button class="is-on">Week</button>
+                <button>Month</button>
+              </div>
+              <button class="btn btn-secondary btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+                Filter
+              </button>
+            </div>
+          </div>
+
+          <div class="tt-grid" role="grid" aria-label="Weekly timetable">
+            <div class="tt-corner" role="columnheader"></div>
+            <div class="tt-day-head is-today" role="columnheader"><div class="name">Sat</div><div class="num">25 <span class="pill-today">Today</span></div></div>
+            <div class="tt-day-head" role="columnheader"><div class="name">Sun</div><div class="num">26</div></div>
+            <div class="tt-day-head" role="columnheader"><div class="name">Mon</div><div class="num">27</div></div>
+            <div class="tt-day-head" role="columnheader"><div class="name">Tue</div><div class="num">28</div></div>
+            <div class="tt-day-head" role="columnheader"><div class="name">Wed</div><div class="num">29</div></div>
+            <div class="tt-day-head" role="columnheader"><div class="name">Thu</div><div class="num">30</div></div>
+            <div class="tt-day-head" role="columnheader"><div class="name">Fri</div><div class="num">1</div></div>
+
+            <!-- 8 AM -->
+            <div class="tt-time">8 AM</div>
+            <div class="tt-cell is-today"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+            <!-- 9 AM (LIVE class) -->
+            <div class="tt-time">9 AM</div>
+            <div class="tt-cell is-today">
+              <div class="cls col-c1" style="top:4px;height:92px">
+                <div class="row1"><span class="time">9:00 – 10:30</span><span class="badge live">Live</span></div>
+                <div class="title">FPP · Variance analysis</div>
+                <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>Aluva · Rm 204</div>
+                <span class="code">AC-1-CM-25-S1-FPP-B1</span>
+              </div>
+            </div>
+            <div class="tt-cell">
+              <div class="cls col-c8" style="top:30px;height:60px">
+                <div class="row1"><span class="time">9:30 – 10:30</span><span class="badge online">Online</span></div>
+                <div class="title">FAAL · Forex hedging</div>
+                <div class="room">Google Meet</div>
+              </div>
+            </div>
+            <div class="tt-cell">
+              <div class="cls col-c5" style="top:0;height:124px">
+                <div class="row1"><span class="time">9:00 – 11:00</span><span class="badge">Workshop</span></div>
+                <div class="title">IFAR2 · Ind AS 116 lab</div>
+                <div class="room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>Kristu J · A-12</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell">
+              <div class="cls col-c1" style="top:0;height:60px">
+                <div class="row1"><span class="time">9:00 – 10:00</span></div>
+                <div class="title">FPP · Budgeting</div>
+                <div class="room">Aluva · Rm 204</div>
+              </div>
+            </div>
+            <div class="tt-cell">
+              <div class="cls col-c5" style="top:0;height:60px">
+                <div class="row1"><span class="time">9:00 – 10:00</span></div>
+                <div class="title">IFAR2 · Revenue</div>
+                <div class="room">Kristu J · A-12</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div>
+
+            <!-- 10 AM -->
+            <div class="tt-time">10 AM</div>
+            <div class="tt-cell is-today"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+            <!-- 11 AM (Up next) -->
+            <div class="tt-time">11 AM</div>
+            <div class="tt-cell is-today">
+              <div class="cls col-c5" style="top:18px;height:60px">
+                <div class="row1"><span class="time">11:15 – 12:15</span><span class="badge">Up next</span></div>
+                <div class="title">IFAR2 · Lease accounting</div>
+                <div class="room">Kristu J · A-12</div>
+              </div>
+            </div>
+            <div class="tt-cell">
+              <div class="cls col-c8" style="top:0;height:60px">
+                <div class="row1"><span class="time">11:00 – 12:00</span><span class="badge online">Online</span></div>
+                <div class="title">FAAL · Tutorial</div>
+                <div class="room">Google Meet</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell">
+              <div class="cls col-c1" style="top:0;height:60px">
+                <div class="row1"><span class="time">11:00 – 12:00</span><span class="badge conflict">Clash</span></div>
+                <div class="title">FPP · Doubt clearing</div>
+                <div class="room">Aluva · Rm 204</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell"></div>
+
+            <!-- 12 PM -->
+            <div class="tt-time">12 PM</div>
+            <div class="tt-cell is-today"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+            <div class="tt-cell">
+              <div class="cls col-c5" style="top:0;height:60px">
+                <div class="row1"><span class="time">12:00 – 13:00</span><span class="badge conflict">Clash</span></div>
+                <div class="title">IFAR2 · Office hour</div>
+                <div class="room">Kristu J · A-12</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div><div class="tt-cell"></div>
+
+            <!-- 1 PM -->
+            <div class="tt-time">1 PM</div>
+            <div class="tt-cell is-today"></div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell">
+              <div class="cls col-c8" style="top:0;height:60px">
+                <div class="row1"><span class="time">13:00 – 14:00</span><span class="badge online">Online</span></div>
+                <div class="title">FAAL · 1:1 mentoring</div>
+                <div class="room">Google Meet</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell"></div>
+            <div class="tt-cell">
+              <div class="cls col-c5" style="top:0;height:60px">
+                <div class="row1"><span class="time">13:00 – 14:00</span></div>
+                <div class="title">IFAR2 · Forum office hr</div>
+                <div class="room">Online</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div>
+
+            <!-- 2 PM -->
+            <div class="tt-time">2 PM</div>
+            <div class="tt-cell is-today"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+            <!-- 3 PM -->
+            <div class="tt-time">3 PM</div>
+            <div class="tt-cell is-today">
+              <div class="cls col-c8" style="top:0;height:60px">
+                <div class="row1"><span class="time">15:00 – 16:00</span><span class="badge online">Online</span></div>
+                <div class="title">FAAL · Practice problems</div>
+                <div class="room">Google Meet</div>
+              </div>
+            </div>
+            <div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+            <!-- 4 PM -->
+            <div class="tt-time">4 PM</div>
+            <div class="tt-cell is-today"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div><div class="tt-cell"></div>
+
+            <!-- now-line at ~10:33 -->
+            <div class="now-line" style="top:227px"><span class="lbl">10:33</span></div>
+          </div>
+        </div>
+
+        <!-- Aside -->
+        <div style="display:flex;flex-direction:column;gap:14px">
+
+          <div class="aside-card">
+            <div class="aside-head">
+              <h3>Today · Saturday</h3>
+              <span class="count">3 classes · 4.5 h</span>
+            </div>
+            <div class="today-list">
+              <div class="today-row is-now">
+                <div class="t">09:00<span class="e">10:30</span></div>
+                <div class="b">
+                  <div class="ti"><span class="stripe" style="background:var(--c1)"></span>FPP · Variance analysis</div>
+                  <div class="me">Aluva · Rm 204 · F2F</div>
+                </div>
+                <div class="a live">LIVE</div>
+              </div>
+              <div class="today-row">
+                <div class="t">11:15<span class="e">12:15</span></div>
+                <div class="b">
+                  <div class="ti"><span class="stripe" style="background:var(--c5)"></span>IFAR2 · Lease accounting</div>
+                  <div class="me">Kristu J · A-12 · F2F</div>
+                </div>
+                <div class="a">UP NEXT</div>
+              </div>
+              <div class="today-row">
+                <div class="t">15:00<span class="e">16:00</span></div>
+                <div class="b">
+                  <div class="ti"><span class="stripe" style="background:var(--c8)"></span>FAAL · Practice</div>
+                  <div class="me">Google Meet · Online</div>
+                </div>
+                <div class="a">15:00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="aside-card">
+            <div class="aside-head">
+              <h3>My subjects</h3>
+              <span class="count">filter view</span>
+            </div>
+            <div class="aside-body">
+              <div class="subj-key">
+                <div class="subj-row"><span class="subj-dot" style="background:var(--c1)"></span><span class="subj-name">FPP — Financial Planning</span><span class="subj-meta">4 cls</span></div>
+                <div class="subj-row"><span class="subj-dot" style="background:var(--c5)"></span><span class="subj-name">IFAR2 — Int. Reporting II</span><span class="subj-meta">3 cls</span></div>
+                <div class="subj-row"><span class="subj-dot" style="background:var(--c8)"></span><span class="subj-name">FAAL — Adv. Accounting</span><span class="subj-meta">4 cls</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="aside-card">
+            <div class="aside-head"><h3>Quick actions</h3></div>
+            <div class="aside-body" style="gap:8px;display:flex;flex-direction:column">
+              <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Log a session</button>
+              <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21l5-5"/><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/></svg>Request a substitution</button>
+              <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Mark today's classes taught</button>
+              <button class="btn btn-secondary btn-sm" style="justify-content:flex-start;width:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Raise a correction</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============ Batches ============ -->
+      <section class="section" id="batches">
+        <div class="section-head">
+          <span class="section-title">My batches <span class="sub">· semester 1 / 3 · current</span></span>
+          <a class="section-link" href="#">All batches <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></a>
+        </div>
+        <div class="batches">
+
+          <article class="b-card" style="--col:var(--c1);--col-bg:var(--c1-bg)">
+            <div class="b-head">
+              <div style="flex:1;min-width:0">
+                <div class="b-code">AC-1-CM-25-S1-FPP-B1</div>
+                <div class="b-subject">Financial Planning &amp; Performance</div>
+                <div class="b-inst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>Aluva College · Mangalore</div>
+              </div>
+              <span class="status s-active">Active</span>
+            </div>
+            <div class="b-meta">
+              <span class="tag">Sem 1</span>
+              <span class="tag cat-f2f">In Campus</span>
+              <span class="tag">Rm 204</span>
+              <span class="tag">Primary</span>
+              <span class="tag">25 students</span>
+            </div>
+            <div class="weekdays">
+              <span class="wd is-on">M</span><span class="wd">T</span><span class="wd is-on">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd is-on">S</span><span class="wd">S</span>
+            </div>
+            <div class="b-foot">
+              <div class="b-prog">
+                <div class="b-prog-bar"><span style="width:65%"></span></div>
+                <div class="b-prog-text">39 / 60 hrs · 65%</div>
+              </div>
+              <button class="btn btn-secondary btn-sm">Open</button>
+            </div>
+          </article>
+
+          <article class="b-card" style="--col:var(--c5);--col-bg:var(--c5-bg)">
+            <div class="b-head">
+              <div style="flex:1;min-width:0">
+                <div class="b-code">KJC-2-CM-24-S3-IFAR2-B2</div>
+                <div class="b-subject">Intermediate Financial Accounting II</div>
+                <div class="b-inst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>Kristu Jayanti College · Bangalore</div>
+              </div>
+              <span class="status s-active">Active</span>
+            </div>
+            <div class="b-meta">
+              <span class="tag">Sem 3</span>
+              <span class="tag cat-f2f">In Campus</span>
+              <span class="tag">Rm A-12</span>
+              <span class="tag">Primary</span>
+              <span class="tag">42 students</span>
+            </div>
+            <div class="weekdays">
+              <span class="wd is-on">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd is-on">T</span><span class="wd is-on">F</span><span class="wd">S</span><span class="wd">S</span>
+            </div>
+            <div class="b-foot">
+              <div class="b-prog">
+                <div class="b-prog-bar"><span style="width:48%"></span></div>
+                <div class="b-prog-text">29 / 60 hrs · 48%</div>
+              </div>
+              <button class="btn btn-secondary btn-sm">Open</button>
+            </div>
+          </article>
+
+          <article class="b-card" style="--col:var(--c8);--col-bg:var(--c8-bg)">
+            <div class="b-head">
+              <div style="flex:1;min-width:0">
+                <div class="b-code">LPU-1-CM-24-S3-FAAL-B1</div>
+                <div class="b-subject">Financial Accounting · Advanced</div>
+                <div class="b-inst"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10z"/></svg>Lovely Professional Univ. · Phagwara</div>
+              </div>
+              <span class="status s-closing">Closing soon</span>
+            </div>
+            <div class="b-meta">
+              <span class="tag">Sem 3</span>
+              <span class="tag cat-online">Online</span>
+              <span class="tag">Secondary</span>
+              <span class="tag">38 students</span>
+            </div>
+            <div class="weekdays">
+              <span class="wd">M</span><span class="wd is-on">T</span><span class="wd">W</span><span class="wd is-on">T</span><span class="wd">F</span><span class="wd is-on">S</span><span class="wd is-on">S</span>
+            </div>
+            <div class="b-foot">
+              <div class="b-prog">
+                <div class="b-prog-bar"><span style="width:91%"></span></div>
+                <div class="b-prog-text">55 / 60 hrs · 91%</div>
+              </div>
+              <button class="btn btn-secondary btn-sm">Open</button>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ============ Bottom: pending · month · recent ============ -->
+      <section class="bottom-grid" id="tt">
+
+        <div class="mini">
+          <div class="mini-head">
+            <h3>Sessions to log</h3>
+            <span class="status s-pending">4 pending</span>
+          </div>
+          <div class="mini-body">
+            <div class="pending-row">
+              <div class="stripe" style="background:var(--c1)"></div>
+              <div class="meta">
+                <div class="ti">FPP · Variance analysis (cont.)</div>
+                <div class="sub">Sat 23 Apr · 09:00–10:30</div>
+              </div>
+              <div class="h">1.5h</div>
+              <button class="btn btn-primary btn-sm">Log</button>
+            </div>
+            <div class="pending-row">
+              <div class="stripe" style="background:var(--c5)"></div>
+              <div class="meta">
+                <div class="ti">IFAR2 · Lease accounting</div>
+                <div class="sub">Fri 22 Apr · 11:15–12:15</div>
+              </div>
+              <div class="h">1.0h</div>
+              <button class="btn btn-primary btn-sm">Log</button>
+            </div>
+            <div class="pending-row">
+              <div class="stripe" style="background:var(--c8)"></div>
+              <div class="meta">
+                <div class="ti">FAAL · Online tutorial</div>
+                <div class="sub">Fri 22 Apr · 11:00–12:00</div>
+              </div>
+              <div class="h">1.0h</div>
+              <button class="btn btn-primary btn-sm">Log</button>
+            </div>
+            <div class="pending-row">
+              <div class="stripe" style="background:var(--c1)"></div>
+              <div class="meta">
+                <div class="ti">FPP · 1:1 catch-up</div>
+                <div class="sub">Thu 21 Apr · 13:00–13:30</div>
+              </div>
+              <div class="h">0.5h</div>
+              <button class="btn btn-primary btn-sm">Log</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini" id="monthly">
+          <div class="mini-head">
+            <h3>May payroll · by category</h3>
+            <span style="font-size:11px;color:var(--text-3);font-family:var(--mono)">Apr 26 – May 25</span>
+          </div>
+          <div class="mini-body">
+            <div class="month-bars">
+              <div class="month-bar"><span class="lbl">F2F</span><span class="track"><span class="seg-a" style="width:43%"></span><span class="seg-p" style="width:8%"></span></span><span class="v">17.50</span></div>
+              <div class="month-bar"><span class="lbl">Online</span><span class="track"><span class="seg-a" style="width:18%"></span><span class="seg-p" style="width:5%"></span></span><span class="v">7.83</span></div>
+              <div class="month-bar"><span class="lbl">OAW</span><span class="track"><span class="seg-a" style="width:23%"></span></span><span class="v">9.00</span></div>
+            </div>
+            <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;font-size:12px;color:var(--text-2)">
+              <span>Approved <strong style="color:var(--success);font-family:var(--mono)">28.50 hrs</strong></span>
+              <span>Pending <strong style="color:var(--warning);font-family:var(--mono)">5.83 hrs</strong></span>
+            </div>
+            <a href="#" class="section-link" style="font-size:12.5px;margin-top:6px">Open full summary →</a>
+          </div>
+        </div>
+
+        <div class="mini" id="rates">
+          <div class="mini-head">
+            <h3>Recently logged</h3>
+            <a class="section-link" href="#" style="font-size:12.5px">View all</a>
+          </div>
+          <div class="mini-body">
+            <div class="recent-row">
+              <div class="d"><div class="m">Apr</div><div class="n">23</div></div>
+              <div class="meta"><div class="ti"><span class="tag" style="background:var(--c8-bg);color:var(--c8);border-color:var(--c8-bd)">FAAL</span><span class="status s-approved">Approved</span></div><div class="sub">FC — Ind AS 21 effects of FX rates.</div></div>
+              <div class="h">1.0h</div>
+            </div>
+            <div class="recent-row">
+              <div class="d"><div class="m">Apr</div><div class="n">22</div></div>
+              <div class="meta"><div class="ti"><span class="tag" style="background:var(--c5-bg);color:var(--c5);border-color:var(--c5-bd)">IFAR2</span><span class="status s-pending">Pending</span></div><div class="sub">Lease accounting — Ind AS 116 scope.</div></div>
+              <div class="h">2.0h</div>
+            </div>
+            <div class="recent-row">
+              <div class="d"><div class="m">Apr</div><div class="n">19</div></div>
+              <div class="meta"><div class="ti"><span class="tag" style="background:var(--c1-bg);color:var(--c1);border-color:var(--c1-bd)">FPP</span><span class="tag cat-oaw">OAW</span><span class="status s-pending">Pending</span></div><div class="sub">Question paper · 2 sets prepared.</div></div>
+              <div class="h">6.0h</div>
+            </div>
+            <div class="recent-row">
+              <div class="d"><div class="m">Apr</div><div class="n">18</div></div>
+              <div class="meta"><div class="ti"><span class="tag" style="background:var(--c1-bg);color:var(--c1);border-color:var(--c1-bd)">FPP</span><span class="status s-rejected">Rejected</span></div><div class="sub">Variance analysis — duplicate, see 03 Sep.</div></div>
+              <div class="h">1.75h</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <p class="foot">Miles Education · Academic Operations Suite · faculty role · <span style="font-family:var(--mono)">v1.0</span></p>
+    </div>
+  </main>
+</div>
+
+<a href="#" class="quick-log" aria-label="Quick log a session">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+  Log session
+</a>
+
+</body>
+</html>
